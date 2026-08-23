@@ -7,8 +7,8 @@ BOT_TOKEN = "8935836445:AAHt6Ko-8TZS-Z7gli7TMpm-KzFlr1JzFG8"
 CHAT_ID = "118523258"  # 若已改為群組 ID 請填入負數 ID
 TARGET_URL = "https://www.asoview.com/item/ticket/ticket0000007351/"
 
-# 監控目標日期
-TARGET_DAYS = ["4", "7"]
+# 監控目標日期：9月4日、9月7日 及 9月8日
+TARGET_DAYS = ["4", "7", "8"]
 
 def send_telegram_alert(message):
     api_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
@@ -84,7 +84,7 @@ def check_ticket():
                 if info.get('found') and not info.get('isSoldOut', True):
                     available_days.append(day)
 
-            # 5. 情況一：有飛釋出（最高優先級警報）
+            # 5. 情況一：有飛釋出（即時警報）
             if available_days:
                 days_str = "、".join([f"9月{d}日" for d in available_days])
                 msg = f"🚨 <b>【鈴鹿賽道挑戰者】有飛釋出！</b>\n\n🎯 <b>釋出日期：{days_str}</b>\n\n🔗 即刻點擊搶購：\n{TARGET_URL}"
@@ -93,17 +93,16 @@ def check_ticket():
             
             # 6. 情況二：每日中午 12:00–12:15 定時報平安
             else:
-                # 換算為香港時間 (UTC+8)
                 hk_now = datetime.datetime.utcnow() + datetime.timedelta(hours=8)
                 print(f"目前香港時間：{hk_now.strftime('%H:%M:%S')}，檢查完成：暫無釋出。")
 
-                # 如果剛好在香港時間 12:00 至 12:15 之間運行，發送每日一次的平安鐘
                 if hk_now.hour == 12 and hk_now.minute < 15:
+                    target_str = "、".join([f"9月{d}日" for d in TARGET_DAYS])
                     heartbeat_msg = (
                         f"🟢 <b>【鈴鹿監控】每日系統報平安</b>\n\n"
                         f"⏰ 報告時間：{hk_now.strftime('%Y-%m-%d %H:%M')}\n"
                         f"📡 狀態：雲端 24 小時自動巡邏正常運作中\n"
-                        f"🎫 9月4日 及 9月7日 目前仍然顯示為售完 (✕)"
+                        f"🎫 監控日期（{target_str}）目前仍然顯示為售完 (✕)"
                     )
                     send_telegram_alert(heartbeat_msg)
 
